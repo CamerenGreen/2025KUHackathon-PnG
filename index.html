@@ -2,41 +2,85 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Hand Distance Volume Controller</title>
+  <title>Volume Control via Gestures</title>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,500" rel="stylesheet">
   <style>
-    #volumeDisplay {
-      width: 100%;
-      height: 30px;
-      background-color: #ddd;
-      margin-top: 10px;
+    body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(to bottom, #3a6186, #89253e);
+      color: #fff;
+      font-family: 'Roboto', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    h1 {
+      margin-bottom: 20px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    }
+    #videoContainer {
       position: relative;
+      display: inline-block;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+      border: 2px solid #fff;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    #video {
+      width: 800px;
+      height: 480px;
+      background-color: #000;
+      /* Mirror the video for a natural webcam view */
+      transform: scaleX(-1);
+    }
+    #overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 800px;
+      height: 480px;
+      pointer-events: none;
+      transform: scaleX(-1);
+    }
+    #volumeDisplay {
+      width: 800px;
+      height: 20px;
+      background-color: rgba(255, 255, 255, 0.3);
+      margin: 15px auto;
+      border-radius: 10px;
+      overflow: hidden;
     }
     #volumeIndicator {
       height: 100%;
       width: 0%;
-      background-color: #4caf50;
+      background: linear-gradient(to right, #00ff7f, #32cd32);
+      border-radius: 10px;
     }
-    #volumeText {
-      margin-top: 5px;
-      font-size: 18px;
+    #volumeText, #modeText {
+      font-size: 20px;
+      margin-top: 10px;
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
     }
   </style>
 </head>
 <body>
-  <h1>Hand Distance Volume Controller</h1>
-  <!-- Video element to display the webcam feed -->
-  <video id="video" width="640" height="480" autoplay playsinline></video>
-
-  <!-- Volume display bar and text -->
+  <h1>Volume Control via Gestures</h1>
+  <div id="videoContainer">
+    <video id="video" autoplay playsinline></video>
+    <canvas id="overlay"></canvas>
+  </div>
   <div id="volumeDisplay">
     <div id="volumeIndicator"></div>
   </div>
   <p id="volumeText">Volume: 0</p>
-
-  <!-- Load MediaPipe Hands and Camera Utils libraries -->
+  <p id="modeText">Mode: VOLUME_CONTROL</p>
+  
+  <!-- Load MediaPipe libraries -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
-
   <!-- Your custom script -->
   <script src="script.js"></script>
 </body>

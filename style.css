@@ -1,0 +1,59 @@
+body {
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(to bottom, #3a6186, #89253e);
+    color: #fff;
+    font-family: 'Roboto', sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+  }
+  h1 {
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+  }
+  #videoContainer {
+    position: relative;
+    display: inline-block;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+    border: 2px solid #fff;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  #video {
+    width: 800px;
+    height: 480px;
+    background-color: #000;
+    /* Mirror the video for a natural webcam view */
+    transform: scaleX(-1);
+  }
+  #overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 800px;
+    height: 480px;
+    pointer-events: none;
+    transform: scaleX(-1);
+  }
+  #volumeDisplay {
+    width: 800px;
+    height: 20px;
+    background-color: rgba(255, 255, 255, 0.3);
+    margin: 15px auto;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  #volumeIndicator {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(to right, #00ff7f, #32cd32);
+    border-radius: 10px;
+  }
+  #volumeText, #modeText {
+    font-size: 20px;
+    margin-top: 10px;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+  }

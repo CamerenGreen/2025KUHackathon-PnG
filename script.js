@@ -15,18 +15,19 @@ const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 const oscillator = audioCtx.createOscillator();
 const gainNode = audioCtx.createGain();
 
-oscillator.type = 'sine';
+oscillator.type = 'sine'; // Waveform type: 'sine',
 oscillator.frequency.value = 440; // A4 note
-oscillator.connect(gainNode);
-gainNode.connect(audioCtx.destination);
-oscillator.start();
+oscillator.connect(gainNode); // Connect oscillator to gain node
+gainNode.connect(audioCtx.destination); // Connect gain node to audio output
+oscillator.start(); // Start the oscillator
+
 
 // Set an initial volume
 gainNode.gain.value = 0.5;
 
 // ----- State Variable -----
-// Two states: "VOLUME_CONTROL" (default) and "VOLUME_LOCKED"
-let currentState = "VOLUME_CONTROL";
+// Two states: "VOLUME CONTROL" (default) and "AUDIO EQUALIZER" 
+let currentState = "VOLUME CONTROL";
 
 // ----- Gesture Threshold -----
 const pinchThreshold = 0.1; // Adjust this threshold as needed
@@ -48,9 +49,9 @@ const hands = new Hands({
 });
 hands.setOptions({
   maxNumHands: 2, // We need two hands for volume control.
-  modelComplexity: 1,
-  minDetectionConfidence: 0.7,
-  minTrackingConfidence: 0.7
+  modelComplexity: 1, 
+  minDetectionConfidence: 0.7, // Minimum confidence for detection
+  minTrackingConfidence: 0.7 // Minimum confidence for tracking
 });
 
 // ----- Process Hand Results -----
@@ -75,13 +76,13 @@ hands.onResults((results) => {
   
   // Update state: if both hands are pinched, lock the volume.
   if (bothPinched) {
-    currentState = "VOLUME_LOCKED";
+    currentState = "AUDIO EQUALIZER";
   } else {
-    currentState = "VOLUME_CONTROL";
+    currentState = "VOLUME CONTROL";
   }
   
   // In VOLUME_CONTROL mode, update volume based on index finger distance.
-  if (currentState === "VOLUME_CONTROL") {
+  if (currentState === "VOLUME CONTROL") {
     const finger1 = hand1[8];
     const finger2 = hand2[8];
     
@@ -93,9 +94,11 @@ hands.onResults((results) => {
     overlayCtx.beginPath();
     overlayCtx.moveTo(x1, y1);
     overlayCtx.lineTo(x2, y2);
+    overlayCtx.lineCap = 'round';
     overlayCtx.strokeStyle = 'white';
     overlayCtx.lineWidth = 4;
     overlayCtx.stroke();
+
     
     // Compute the normalized Euclidean distance between the two index finger tips.
     const dx = finger2.x - finger1.x;
@@ -110,9 +113,27 @@ hands.onResults((results) => {
     volumeIndicator.style.width = (volume * 100) + '%';
     volumeText.textContent = 'Volume: ' + Math.round(volume * 100);
     
-  } else if (currentState === "VOLUME_LOCKED") {
-    // In locked state, simply display the locked volume.
+  } else if (currentState === "AUDIO EQUALIZER") {
+    // In locked state, display the locked volume.
     volumeText.textContent = 'Volume Locked: ' + Math.round(gainNode.gain.value * 100);
+
+    // Adjust pitch based on the horizontal position of a single hand.
+    const hand = results.multiHandLandmarks[0]; // Use the first detected hand.
+    const indexFinger = hand[8]; // Index finger tip.
+
+    // Map the horizontal position (x) to a frequency range.
+    // Assuming x ranges from 0 (left) to 1 (right).
+    const minFrequency = 220; // A3 note
+    const maxFrequency = 880; // A5 note
+    const normalizedX = indexFinger.x; // x is already normalized between 0 and 1.
+    const frequency = minFrequency + (maxFrequency - minFrequency) * normalizedX;
+
+    // Update the oscillator frequency.
+    oscillator.frequency.value = frequency;
+
+    // Display the current frequency and volume.
+    volumeIndicator.style.width = (gainNode.gain.value * 100) + '%';
+    volumeText.textContent = 'Volume: ' + Math.round(gainNode.gain.value * 100) + '% | Frequency: ' + Math.round(frequency) + ' Hz';
   }
   
   modeText.textContent = "Mode: " + currentState;
@@ -128,4 +149,5 @@ const camera = new Camera(videoElement, {
   height: 480,
   flipHorizontal: true
 });
+camera.start();
 camera.start();

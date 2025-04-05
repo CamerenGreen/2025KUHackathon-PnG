@@ -2,12 +2,18 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Visual EQ</title>
+  <title>Vision EQ</title>
   <link href="https://fonts.googleapis.com/css?family=Roboto:400,500" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <h1>Visual Equalizer</h1>
+  <div id="audioUpload" style="text-align: center; margin: 20px 0;">
+    <label for="audioFile" style="font-family: 'Roboto', sans-serif; font-size: 16px; font-weight: 500; margin-right: 10px;">Upload Audio File:</label>
+    <input type="file" id="audioFile" accept="audio/*" style="padding: 5px; font-size: 14px;">
+    <button id="playAudio" style="padding: 8px 15px; font-size: 14px; font-weight: 500; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; margin-left: 10px;">Play Audio</button>
+  </div>
+
   <div id="videoContainer">
     <video id="video" autoplay playsinline></video>
     <canvas id="overlay"></canvas>
@@ -21,7 +27,7 @@
   <!-- Load MediaPipe libraries -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
-  <!-- Imported JavaCcript -->
+  <!-- Imported JavaScript script -->
   <script src="script.js"></script>
 </body>
 </html>

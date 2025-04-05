@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Hand Distance Volume Controller</title>
+  <style>
+    #volumeDisplay {
+      width: 100%;
+      height: 30px;
+      background-color: #ddd;
+      margin-top: 10px;
+      position: relative;
+    }
+    #volumeIndicator {
+      height: 100%;
+      width: 0%;
+      background-color: #4caf50;
+    }
+    #volumeText {
+      margin-top: 5px;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Hand Distance Volume Controller</h1>
+  <!-- Video element to display the webcam feed -->
+  <video id="video" width="640" height="480" autoplay playsinline></video>
+
+  <!-- Volume display bar and text -->
+  <div id="volumeDisplay">
+    <div id="volumeIndicator"></div>
+  </div>
+  <p id="volumeText">Volume: 0</p>
+
+  <!-- Load MediaPipe Hands and Camera Utils libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+
+  <!-- Your custom script -->
+  <script src="script.js"></script>
+</body>
+</html>

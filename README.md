@@ -40,7 +40,7 @@ A web-based application that allows users to control audio volume and frequency 
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/CamerenGreen/visual-equalizer.git
+   git clone https://github.com/CamerenGreen/VisionEQ.git
    cd visual-equalizer
    
 2. **Open the application**:

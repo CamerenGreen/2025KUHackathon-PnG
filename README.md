@@ -2,7 +2,7 @@
 
 A web-based application that allows users to control audio volume and frequency using hand gestures via computer vision.
 
-![Visual Equalizer Demo](demo.gif) *Example of the Visual Equalizer in action*
+![Visual Equalizer Demo](demo.gif) *Example of the Visual Equalizer in action will go here*
 
 ## Features
 

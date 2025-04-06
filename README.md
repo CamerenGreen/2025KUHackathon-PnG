@@ -43,15 +43,15 @@ A web-based application that allows users to control audio volume and frequency 
    git clone https://github.com/CamerenGreen/visual-equalizer.git
    cd visual-equalizer
 2. Open the application:
-  -Simply open index.html in a modern web browser (Chrome/Firefox recommended)
-  -No server is required as it runs client-side
+  - Simply open index.html in a modern web browser (Chrome/Firefox recommended)
+  - No server is required as it runs client-side
 3. Using the application:
-  -Grant camera permissions when prompted
-  -Upload an audio file or use the built-in oscillator
-  -Use hand gestures to control volume and frequency:
-    -Separate index fingers to adjust volume
-    -Pinch gestures to adjust frequency
-    -Open palms to lock settings
+  - Grant camera permissions when prompted
+  - Upload an audio file or use the built-in oscillator
+  - Use hand gestures to control volume and frequency:
+    - Separate index fingers to adjust volume
+    - Pinch gestures to adjust frequency
+    - Open palms to lock settings
 
 ## Future Updates
 - Add preset frequency bands for equalizer mode

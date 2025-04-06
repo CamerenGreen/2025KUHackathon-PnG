@@ -5,10 +5,17 @@ const overlayCtx = overlay.getContext('2d');
 const volumeIndicator = document.getElementById('volumeIndicator');
 const volumeText = document.getElementById('volumeText');
 const modeText = document.getElementById('modeText');
+const visualizerCanvas = document.getElementById('audioVisualizer');
+const visualizerCtx = visualizerCanvas.getContext('2d');
+let analyser; // Analyser node for audio visualization
 
 // Get the audio file input and play button elements
 const audioFileInput = document.getElementById('audioFile');
 const playAudioButton = document.getElementById('playAudio');
+
+// Set canvas size
+visualizerCanvas.width = 800;
+visualizerCanvas.height = 60;
 
 // Set canvas size to match video dimensions
 overlay.width = 800;
@@ -38,6 +45,55 @@ audioInput.style.display = 'none';
 document.body.appendChild(audioInput);
 
 
+// Modify the audio setup to include visualization
+function setupAudioVisualizer(audioSource) {
+  analyser = audioCtx.createAnalyser();
+  analyser.fftSize = 512; // Size of the FFT (Fast Fourier Transform)
+  audioSource.connect(analyser); // Connect the audio source to the analyser
+  visualize(); // Start the visualization
+} 
+
+function visualize() {
+  if (!analyser) return;
+  
+  const bufferLength = analyser.frequencyBinCount;
+  const dataArray = new Uint8Array(bufferLength);
+  
+  function draw() {
+      requestAnimationFrame(draw);
+      analyser.getByteFrequencyData(dataArray);
+      
+      visualizerCtx.clearRect(0, 0, visualizerCanvas.width, visualizerCanvas.height);
+      
+      // Draw volume indicator background
+      const volumeWidth = (gainNode.gain.value * 100) + '%';
+      visualizerCtx.fillStyle = 'rgba(0, 255, 127, 0.1)';
+      visualizerCtx.fillRect(0, 0, visualizerCanvas.width * gainNode.gain.value, visualizerCanvas.height);
+      
+      // Draw waveform
+      const barWidth = (visualizerCanvas.width / bufferLength) * 2.5;
+      let x = 0;
+      
+      for (let i = 0; i < bufferLength; i++) {
+          const barHeight = (dataArray[i] / 255) * visualizerCanvas.height;
+          
+          // Gradient based on frequency
+          const hue = i / bufferLength * 360;
+          visualizerCtx.fillStyle = `hsla(${hue}, 100%, 50%, 0.8)`;
+          
+          visualizerCtx.fillRect(
+              x,
+              visualizerCanvas.height - barHeight,
+              barWidth,
+              barHeight
+          );
+          
+          x += barWidth + 1;
+      }
+  }
+  
+  draw();
+}
 
 // Add event listener to the audio input
 audioInput.addEventListener('change', (event) => {
@@ -50,9 +106,8 @@ audioInput.addEventListener('change', (event) => {
     // Connect the audio source to the gain node and destination
     audioSource.connect(gainNode);
     gainNode.connect(audioCtx.destination);
-
-    // Play the audio
-    audioElement.play();
+    setupAudioVisualizer(audioSource); // Set up the audio visualizer
+    audioElement.play(); // Play the audio file
   }
 });
 
@@ -62,7 +117,11 @@ playAudioButton.addEventListener('click', () => {
   if (file) {
     const fileURL = URL.createObjectURL(file);
     audio.src = fileURL;
-    audio.play();
+    const audioSource = audioCtx.createMediaElementSource(audio); // Create a media element source from the audio element
+    audioSource.connect(gainNode); // Connect the audio source to the gain node
+    setupAudioVisualizer(audioSource); // Set up the audio visualizer
+    audio.play(); // Play the audio file
+    audio.loop = true; // Loop the audio
   } else {
     alert('Please upload an audio file first.');
   }
@@ -75,11 +134,53 @@ audioInput.click();
 gainNode.gain.value = 0.5;
 
 // ----- State Variable -----
-// Two states: "VOLUME CONTROL" (default) and "AUDIO EQUALIZER" 
-let currentState = "VOLUME CONTROL";
+// Three states: "VOLUME CONTROL", "AUDIO EQUALIZER", "TOTAL LOCK"
+let currentState = "AUDIO EQUALIZER"; // Initialize the current state in AUDIO EQUALIZER mode
 
 // ----- Gesture Threshold -----
 const pinchThreshold = 0.1; // Adjust this threshold as needed
+
+// ----- Dynamic Mode Texts for UI -----
+const modeTexts = {
+  "VOLUME CONTROL": "Separate index fingers to change volume. Pinch to alter frequency and lock volume or open hands to lock both.",
+  "AUDIO EQUALIZER": "Separate pinched fingers to lock volume and adjust frequency. Unpinch and raise index fingers to alter volume and lock frequency or open hands to lock both.",
+  "TOTAL LOCK": "Open both palms facing the camera to lock both volume and frequency. Pinch to unlock and alter frequency or raise index fingers to alter volume.",
+  "FULL RESET": "Reset to default state. Pinch hands to lock volume and frequency or open hands to lock both."
+};
+
+// Get the dynamic mode text element
+const dynamicModeText = document.getElementById('dynamicModeText');
+
+// Function to update mode text and description
+function updateModeUI() {
+  // Only update if we have a valid state change
+  if (currentState === previousState) return;
+
+  // Update the mode text
+  modeText.textContent = "Mode: " + currentState;
+  
+  // Get the text element
+  const textElement = document.getElementById('dynamicModeText');
+  textElement.style.opacity = 0; // Start with opacity 0 for fade out effect
+  
+  // Wait for fade out to complete before changing text and fading in
+  setTimeout(() => {
+    textElement.textContent = modeTexts[currentState] || "Unknown Mode";
+    textElement.style.opacity = 1; // Fade in effect
+  }, 300); // Matches the CSS transition duration
+}
+
+// Initialize the UI with active class
+function initializeUI() {
+  modeText.textContent = "Mode: " + currentState;
+  dynamicModeText.textContent = modeTexts[currentState] || "Unknown Mode";
+  // Force reflow to enable transition
+  void dynamicModeText.offsetWidth;
+  dynamicModeText.classList.add('active');
+}
+
+// Start the working the UI
+initializeUI();
 
 // ----- Helper Functions for Gesture Detection -----
 
@@ -123,7 +224,7 @@ function openPalm(hand) {
 
 // ----- Set Up MediaPipe Hands -----
 const hands = new Hands({
-  locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+  locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` // Load MediaPipe Hands API model
 });
 hands.setOptions({
   maxNumHands: 2, // We need two hands for volume control.
@@ -133,6 +234,9 @@ hands.setOptions({
 });
 
 // ----- Process Hand Results -----
+
+let previousState = null; // Initialize previous state to null
+
 hands.onResults((results) => {
   // Clear the overlay canvas each frame.
   overlayCtx.clearRect(0, 0, overlay.width, overlay.height);
@@ -149,23 +253,33 @@ hands.onResults((results) => {
   const hand1 = results.multiHandLandmarks[0];
   const hand2 = results.multiHandLandmarks[1];
   
-  // Check if both hands are pinched.
-  const bothPinched = isPinch(hand1) && isPinch(hand2);
-  const bothOpen = openPalm(hand1) && openPalm(hand2);
-  const onlyIndexes = onlyIndex(hand1) && onlyIndex(hand2);
+  // Check for gestures for both hands.
+  const bothPinched = isPinch(hand1) && isPinch(hand2); // Both hands pinched
+  const bothOpen = openPalm(hand1) && openPalm(hand2); // Both hands open
+  const onlyIndexes = onlyIndex(hand1) && onlyIndex(hand2); // Only index fingers showing
+  const oneOpen = openPalm(hand1) | openPalm(hand2); // Only index finger showing in hand 1
 
 
-  // Update state: if both hands are pinched, lock the volume.
+  // Determine the new state based on the gestures.
+  let newState = currentState; 
   if (bothPinched) {
-    currentState = "AUDIO EQUALIZER";
+    newState = "AUDIO EQUALIZER";
   } else if (onlyIndexes) {
     // If only the index fingers are showing, switch to volume control mode.
-    currentState = "VOLUME CONTROL";
+    newState = "VOLUME CONTROL";
   } else if (bothOpen) {
     // If both hands are open, switch to total lock mode.
-    currentState = "TOTAL LOCK";
+    newState = "TOTAL LOCK";
+  } else if (oneOpen) {
+    newState = "FULL RESET"; // Reset to default state if only one index finger is showing
   }
   
+  // Only update if state actually changed
+  if (newState !== currentState) {
+    previousState = currentState;
+    currentState = newState;
+    updateModeUI();
+  }
 
   // In VOLUME_CONTROL mode, update volume based on index finger distance.
   if (currentState === "VOLUME CONTROL") {
@@ -215,7 +329,7 @@ hands.onResults((results) => {
     // Map the horizontal position (x) to a frequency range.
     // Assuming x ranges from 0 (left) to 1 (right).
     const minFrequency = 220; // A2 note (1/4th playback speed)
-    const maxFrequency = 660; // A4 note (normal frequency)
+    const maxFrequency = 660; // A4 note (1.5x playback speed)
     const normalizedX = indexFinger.x; // x is already normalized between 0 and 1.
     const frequency = minFrequency + (maxFrequency - minFrequency) * normalizedX;
 
@@ -231,19 +345,24 @@ hands.onResults((results) => {
   } else if (currentState === "TOTAL LOCK") {
     // In total lock state, keep the volume and frequency unchanged.
     volumeText.textContent = 'Volume Locked at: ' + Math.round(gainNode.gain.value * 100) + '% | Frequency Locked at ' + Math.round(oscillator.frequency.value) + ' Hz';
+  } else if (currentState === "FULL RESET") {
+    // Reset to default state if only one index finger is showing.
+    volumeText.textContent = 'Volume: ' + Math.round(gainNode.gain.value * 100) + '% | Frequency: ' + Math.round(oscillator.frequency.value) + ' Hz';
+    gainNode.gain.value = 0.75; // Reset volume to default
+    oscillator.frequency.value = 440; // Reset frequency to default (A4 note)
+    audio.playbackRate = 1; // Reset playback rate to default
   }
   
   modeText.textContent = "Mode: " + currentState;
 });
 
 // ----- Set Up the Camera -----
-// Using flipHorizontal: true so that the video and overlay appear mirrored.
 const camera = new Camera(videoElement, {
   onFrame: async () => {
-    await hands.send({ image: videoElement });
+    await hands.send({ image: videoElement }); // Send the video frame to MediaPipe Hands for processing
   },
   width: 800,
   height: 480,
-  flipHorizontal: true
+  flipHorizontal: true // Flip the camera feed for a mirror effect
 });
 camera.start();

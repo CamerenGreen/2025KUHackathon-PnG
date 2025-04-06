@@ -8,10 +8,10 @@
 </head>
 <body>
   <h1>Visual Equalizer</h1>
-  <div id="audioUpload" style="text-align: center; margin: 20px 0;">
-    <label for="audioFile" style="font-family: 'Roboto', sans-serif; font-size: 16px; font-weight: 500; margin-right: 10px;">Upload Audio File:</label>
-    <input type="file" id="audioFile" accept="audio/*" style="padding: 5px; font-size: 14px;">
-    <button id="playAudio" style="padding: 8px 15px; font-size: 14px; font-weight: 500; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; margin-left: 10px;">Play Audio</button>
+  <div id="audioUpload">
+    <label for="audioFile">Upload Audio File:</label>
+    <input type="file" id="audioFile" accept="audio/*">
+    <button id="playAudio">Play Audio</button>
   </div>
 
   <div id="videoContainer">
@@ -20,9 +20,14 @@
   </div>
   <div id="volumeDisplay">
     <div id="volumeIndicator"></div>
-  </div>
+    <canvas id="audioVisualizer"></canvas>
+</div>
   <p id="volumeText">Volume: 0</p>
-  <p id="modeText">Mode: VOLUME CONTROL</p>
+  <p id="modeText">Mode: AUDIO EQUALIZER</p>
+  <div id="modeDescription">
+    <p id="dynamicModeText"></p>
+  </div>
+
   
   <!-- Load MediaPipe libraries -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
